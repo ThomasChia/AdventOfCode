@@ -18,15 +18,18 @@ def common_elements(list1, list2):
 def string_numbers_to_list(string):
     return [int(number) for number in string.split(" ")]
 
-points = 0
+scratchcards = len(data)
+scratchcard_counts = {i: 1 for i in range(scratchcards)}
 
-for event in data:
-    winning, own = split_numbers(event)
-    winning = string_numbers_to_list(winning)
-    own = string_numbers_to_list(own)
-    winning_numbers = common_elements(winning, own)
-    if len(winning_numbers) > 0:
-        points += pow(2, len(winning_numbers)-1)
+for i, event in enumerate(data):
+    for j in range(scratchcard_counts[i]):
+        winning, own = split_numbers(event)
+        winning = string_numbers_to_list(winning)
+        own = string_numbers_to_list(own)
+        winning_numbers = common_elements(winning, own)
+        for k in range(len(winning_numbers)):
+            scratchcard_counts[i+k+1] += 1
 
 
-print(points)
+print(scratchcard_counts)
+print(sum(scratchcard_counts.values()))
