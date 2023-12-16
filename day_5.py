@@ -23,44 +23,67 @@ def create_generic_mapping(mapping_details):
 
     return map
 
-
-def get_seeds(seeds):
-    seeds = data[i].split(': ')[1].strip()
+def get_seeds(seeds_string):
+    seeds = seeds_string.split(': ')[1].strip()
+    seeds = seeds.strip().split(' ')
     return seeds
+
+def get_seeds_part_two(seeds_string):
+    seeds = []
+    seeds_ranges = seeds_string.split(': ')[1].strip().strip().split(' ')
+    seeds_ranges = [int(i) for i in seeds_ranges]
+    seeds = [(seeds_ranges[i], seeds_ranges[i] + seeds_ranges[i+1]) for i in range(0, len(seeds_ranges), 2)]
+    return seeds
+
+def contains(seed, seeds):
+    return any(start <= seed < end for start, end in seeds)
+
+def reverse_mapping(maps):
+    reversed_maps = []
+    for map in maps:
+        reversed_map = []
+        for destination_start_range, source_start_range, range_length in map:
+            reversed_map = [[source_start_range, destination_start_range, range_length]] + reversed_map
+
+        reversed_maps = [reversed_map] + reversed_maps
+    return reversed_maps
+
+def location_to_seed(location, maps):
+    for map in maps:
+        for destination_start_range, source_start_range, range_length in map:
+            if int(location) >= source_start_range and int(location) < source_start_range + range_length:
+                location = destination_start_range + (int(location) - source_start_range)
+                break
+    return location
+
+def find_location(seed, maps):
+    location = seed
+    location = location_to_seed(location, maps)
+
+    return location
+
+def seed_in_original(seed, seeds):
+    return any(start <= seed < end for start, end in seeds)
 
 for i, mapping_string in enumerate(data):
     if i == 0:
-        seeds = get_seeds(seeds)
-        print(seeds)
+        # seeds = get_seeds(data[i])
+        seeds = get_seeds_part_two(data[i])
     else:
         data[i] = mapping_string.split('\n')
         map = create_generic_mapping(data[i])
         maps.append(map)
 
-seeds = seeds.strip().split(' ')
+maps = reverse_mapping(maps)
 
-for seed in tqdm(seeds):
-    for map in maps:
-        for destination_start_range, source_start_range, range_length in map:
-            if int(seed) >= source_start_range and int(seed) < source_start_range + range_length:
-                seed = destination_start_range + (int(seed) - source_start_range)
-                break
+location = 0
+while True:
+    seed = location_to_seed(location, maps)
+    if seed_in_original(seed, seeds):
+        print(f"r: {location}")
+        break
 
-    locations.append(seed)
+    if location % 1000000 == 0:
+        print(location)
 
-print(min(locations))
-
-# for seed in seeds.strip().split(' '):
-#     soil = seed_location_mapping[0][int(seed)]
-#     fertiliser = seed_location_mapping[1][soil]
-#     water = seed_location_mapping[2][fertiliser]
-#     light = seed_location_mapping[3][water]
-#     temp = seed_location_mapping[4][light] 
-#     humidity = seed_location_mapping[5][temp]
-#     location = seed_location_mapping[6][humidity]
-#     locations.append(location)
-
-# print(seed_location_mapping)
-# print(soil, fertiliser, water, light, temp, humidity, location)
-# print(locations)
-# print(min(locations))
+    location += 1
